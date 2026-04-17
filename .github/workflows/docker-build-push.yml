@@ -14,7 +14,7 @@ jobs:
           curl -s https://api.github.com/repos/deploymenttheory/go-jamf-guid-sharder/releases/latest \
           | grep "browser_download_url.*darwin_arm64" \
           | cut -d '"' -f 4 \
-          | xargs curl -L | tar xz
+          | xargs curl -L | tar xz \
           rm LICENCE
 
       - name: registry-login
