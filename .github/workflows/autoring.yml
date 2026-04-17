@@ -79,6 +79,10 @@ jobs:
           [[ -n "$EXCLUDE_IDS" ]]       && ARGS+=(--exclude-ids "$EXCLUDE_IDS")
           "${ARGS[@]}" >> shards.json
 
+
+      - name: make-shards-dir
+        run: mkdir shards/
+
       - name: format-into-terraform
         run: python scripts/parsing/parse_shards.py
 

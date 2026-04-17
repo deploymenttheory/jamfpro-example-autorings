@@ -4,7 +4,7 @@ import sys
 import json
 
 FILE_NAME = "shards.json"
-SHARDS_DIR = "/"
+SHARDS_DIR = "shards/"
 
 if not os.path.exists(FILE_NAME):
     print(f"error: {FILE_NAME} not found")
@@ -20,8 +20,6 @@ shards = data.get("shards", [])
 if not shards:
     print("no shards available")
     sys.exit(1)
-
-os.makedirs(SHARDS_DIR, exist_ok=True)
 
 for k, v in shards.items():
     # HCL identifiers can't have hyphens
