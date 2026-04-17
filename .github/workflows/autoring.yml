@@ -82,6 +82,13 @@ jobs:
       - name: format-into-terraform
         run: python scripts/parsing/parse_shards.py
 
+      - name: test
+        run: |
+          ls -a
+          ls
+          ls shards/
+
+
 
 
 
