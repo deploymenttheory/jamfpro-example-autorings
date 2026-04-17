@@ -64,7 +64,7 @@ jobs:
           SEED: ${{ inputs.seed }}
           EXCLUDE_IDS: ${{ inputs.exclude_ids }}
         run: |
-          ARGS=(./go-jamf-guid-sharder shard
+          ARGS=(sharder shard
             --instance-domain "$JAMFPRO_INSTANCE_FQDN"
             --auth-method oauth2
             --client-id "$JAMFPRO_CLIENT_ID"
