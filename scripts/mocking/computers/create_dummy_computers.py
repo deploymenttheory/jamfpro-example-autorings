@@ -1,8 +1,8 @@
 import os
+import sys
 import random
 import uuid
 import json
-from optparse import OptionParser
 from pathlib import Path
 import jamfpy
 from dotenv import load_dotenv
@@ -10,7 +10,14 @@ load_dotenv()
 
 logger = jamfpy.new_logger(name="site_computer_setup", level=20)
 
-COMPUTER_COUNT = 10
+try:
+    COMPUTER_COUNT = int(sys.argv[1])
+except IndexError:
+    print("no computer count argument")
+    sys.exit(1)
+
+
+# COMPUTER_COUNT = 10
 
 TENTANT_FQDN = os.environ.get("JAMFPRO_INSTANCE_FQDN")
 CLIENT_ID = os.environ.get("JAMFPRO_CLIENT_ID")
@@ -126,14 +133,14 @@ def send_create(instance_object, payload, type_string):
     return object_id
 
 
-def write_ids_to_data_source(computer_ids):
+def write_ids_to_file(computer_ids):
     full_path = "computer_ids.json"
     file = Path(full_path)
-    # If the file path doesnt exist, the next line facilitates its creation
     file.parent.mkdir(parents=True, exist_ok=True)
-    data_json = json.dumps(computer_ids)
-    file.write_text(data_json)
+    existing = json.loads(file.read_text()) if file.exists() else []
+    existing.extend(computer_ids)
+    file.write_text(json.dumps(existing))
 
 
 computer_ids = create_computers(COMPUTER_COUNT)
-write_ids_to_data_source(computer_ids=computer_ids)
+write_ids_to_file(computer_ids=computer_ids)
