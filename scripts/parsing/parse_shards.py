@@ -21,6 +21,8 @@ if not shards:
     print("no shards available")
     sys.exit(1)
 
+os.makedirs(SHARDS_DIR, exist_ok=True)
+
 for k, v in shards.items():
     # HCL identifiers can't have hyphens
     resource_name = f"auto_{k}".replace("-", "_")
@@ -32,7 +34,7 @@ for k, v in shards.items():
     tf += f'  assigned_computer_ids = [{ids}]\n'
     tf += '}\n'
 
-    os.mkdir(SHARDS_DIR)
+    
     filename = f"{SHARDS_DIR}/{group_name}.tf"
     with open(filename, "w", encoding="utf-8") as out:
         out.write(tf)
