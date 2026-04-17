@@ -32,6 +32,7 @@ for k, v in shards.items():
     tf += f'  assigned_computer_ids = [{ids}]\n'
     tf += '}\n'
 
+    os.mkdir(SHARDS_DIR)
     filename = f"{SHARDS_DIR}/{group_name}.tf"
     with open(filename, "w", encoding="utf-8") as out:
         out.write(tf)
