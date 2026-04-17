@@ -51,6 +51,7 @@ jobs:
     permissions:
       contents: write
       packages: read
+      pull-requests: write
     container:
       image: ghcr.io/${{ github.repository }}/main:latest
 
