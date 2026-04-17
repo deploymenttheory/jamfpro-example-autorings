@@ -81,3 +81,7 @@ jobs:
 
       - name: test
         run: cat output.json
+
+
+      - name: format-into-terraform
+        run: python scripts/parsing/parse_shards.py
