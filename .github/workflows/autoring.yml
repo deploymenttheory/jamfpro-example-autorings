@@ -20,7 +20,6 @@ on:
         description: "Number of shards (round-robin / rendezvous)"
         required: false
         type: number
-        default: 3
       shard_percentages:
         description: "Shard percentages summing to 100, e.g. 10,30,60 (percentage strategy)"
         required: false
