@@ -95,7 +95,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd ${{ github.repository }}
+          cd jamfpro-autoring
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           BRANCH="deployment-shard/$TIMESTAMP"
 
