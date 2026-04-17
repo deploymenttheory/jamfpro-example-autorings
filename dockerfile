@@ -7,7 +7,8 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 COPY ./requirements.txt .
-COPY ./go-jamf-guid-sharder .
+COPY ./go-jamf-guid-sharder /usr/local/bin/go-jamf-guid-sharder
+RUN chmod +x /usr/local/bin/go-jamf-guid-sharder
 
 RUN set -eux; \
     apt-get update && \
