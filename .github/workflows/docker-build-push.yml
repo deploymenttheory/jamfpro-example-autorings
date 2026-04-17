@@ -20,8 +20,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: ./docker/integration_tests
+          file: ./dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/provider_testing:latest
-            ghcr.io/${{ github.repository }}/provider_testing:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/main:latest
+            ghcr.io/${{ github.repository }}/main:${{ github.sha }}
