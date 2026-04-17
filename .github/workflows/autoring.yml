@@ -87,4 +87,7 @@ jobs:
         run: python scripts/parsing/parse_shards.py
 
       - name: test2
-        run: ls -1a
+        run: ls -1 | xargs cat
+
+
+
