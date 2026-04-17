@@ -53,6 +53,7 @@ jobs:
       - name: checkout-repo
         uses: actions/checkout@v6
       - name: shard
+        shell: bash
         env:
           STRATEGY: ${{ inputs.strategy }}
           SHARD_COUNT: ${{ inputs.shard_count }}
