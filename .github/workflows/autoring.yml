@@ -91,6 +91,9 @@ jobs:
       - name: format-into-terraform
         run: python scripts/parse_shards.py
 
+      - name: debug
+        run: ls -1a
+
       - name: create-branches
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
