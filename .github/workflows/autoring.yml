@@ -79,15 +79,9 @@ jobs:
           [[ -n "$EXCLUDE_IDS" ]]       && ARGS+=(--exclude-ids "$EXCLUDE_IDS")
           "${ARGS[@]}" >> shards.json
 
-      - name: test
-        run: cat shards.json
-
-
       - name: format-into-terraform
         run: python scripts/parsing/parse_shards.py
 
-      - name: test2
-        run: ls -1 | xargs cat
 
 
 

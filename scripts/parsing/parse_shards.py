@@ -4,6 +4,7 @@ import sys
 import json
 
 FILE_NAME = "shards.json"
+SHARDS_DIR = "/"
 
 if not os.path.exists(FILE_NAME):
     print(f"error: {FILE_NAME} not found")
@@ -31,7 +32,7 @@ for k, v in shards.items():
     tf += f'  assigned_computer_ids = [{ids}]\n'
     tf += '}\n'
 
-    filename = f"{group_name}.tf"
+    filename = f"{SHARDS_DIR}/{group_name}.tf"
     with open(filename, "w", encoding="utf-8") as out:
         out.write(tf)
     print(f"wrote {filename}")
