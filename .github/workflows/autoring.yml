@@ -3,15 +3,64 @@ run-name: Auto Ring
 
 
 on:
-    workflow_dispatch:
-jobs:
-    AutoRing:
-        runs-on: ubuntu-latest
-        container:
-            image: ghcr.io/${{ github.repository }}/main:latest
+  workflow_dispatch:
+    inputs:
+      strategy:
+        description: "Distribution algorithm"
+        required: true
+        type: choice
+        options: [round-robin, percentage, size, rendezvous]
+        default: round-robin
+      shard_count:
+        description: "Number of shards (round-robin / rendezvous)"
+        required: false
+        type: number
+      shard_percentages:
+        description: "Shard percentages summing to 100, e.g. 10,30,60 (percentage strategy)"
+        required: false
+        type: string
+      shard_sizes:
+        description: "Absolute shard sizes, -1 = remainder, e.g. 50,200,-1 (size strategy)"
+        required: false
+        type: string
+      seed:
+        description: "Seed string for deterministic shuffling (optional)"
+        required: false
+        type: string
 
-        steps:
-          - name: checkout-repo
-            uses: actions/checkout@v6            
-          - name: test
-            run: sharder
+
+env:
+  JAMFPRO_INSTANCE_FQDN: ${{ vars.JAMFPRO_INSTANCE_FQDN }}
+  JAMFPRO_CLIENT_ID: ${{ secrets.JAMFPRO_CLIENT_ID }}
+  JAMFPRO_CLIENT_SECRET: ${{ secrets.JAMFPRO_CLIENT_SECRET }}
+
+jobs:
+  AutoRing:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/main:latest
+
+    steps:
+      - name: checkout-repo
+        uses: actions/checkout@v6
+      - name: shard
+        env:
+          STRATEGY: ${{ inputs.strategy }}
+          SHARD_COUNT: ${{ inputs.shard_count }}
+          SHARD_PERCENTAGES: ${{ inputs.shard_percentages }}
+          SHARD_SIZES: ${{ inputs.shard_sizes }}
+          SEED: ${{ inputs.seed }}
+        run: |
+          ARGS=(./go-jamf-guid-sharder shard
+            --instance-domain "$JAMFPRO_INSTANCE_FQDN"
+            --auth-method oauth2
+            --client-id "$JAMFPRO_CLIENT_ID"
+            --client-secret "$JAMFPRO_CLIENT_SECRET"
+            --source-type computer_inventory
+            --strategy "$STRATEGY"
+          )
+          [[ -n "$SHARD_COUNT" ]]       && ARGS+=(--shard-count "$SHARD_COUNT")
+          [[ -n "$SHARD_PERCENTAGES" ]] && ARGS+=(--shard-percentages "$SHARD_PERCENTAGES")
+          [[ -n "$SHARD_SIZES" ]]       && ARGS+=(--shard-sizes "$SHARD_SIZES")
+          [[ -n "$SEED" ]]              && ARGS+=(--seed "$SEED")
+          "${ARGS[@]}" >> output.json
