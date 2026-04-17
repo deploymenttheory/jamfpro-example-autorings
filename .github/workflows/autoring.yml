@@ -5,6 +5,10 @@ run-name: Auto Ring
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: "GitHub Actions environment to target"
+        required: false
+        type: string
       strategy:
         description: "Distribution algorithm"
         required: true
@@ -27,6 +31,10 @@ on:
         description: "Seed string for deterministic shuffling (optional)"
         required: false
         type: string
+      exclude_ids:
+        description: "IDs to exclude from all shards, comma-separated e.g. 1001,1002"
+        required: false
+        type: string
 
 
 env:
@@ -36,6 +44,7 @@ env:
 
 jobs:
   AutoRing:
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository }}/main:latest
@@ -50,6 +59,7 @@ jobs:
           SHARD_PERCENTAGES: ${{ inputs.shard_percentages }}
           SHARD_SIZES: ${{ inputs.shard_sizes }}
           SEED: ${{ inputs.seed }}
+          EXCLUDE_IDS: ${{ inputs.exclude_ids }}
         run: |
           ARGS=(./go-jamf-guid-sharder shard
             --instance-domain "$JAMFPRO_INSTANCE_FQDN"
@@ -63,8 +73,8 @@ jobs:
           [[ -n "$SHARD_PERCENTAGES" ]] && ARGS+=(--shard-percentages "$SHARD_PERCENTAGES")
           [[ -n "$SHARD_SIZES" ]]       && ARGS+=(--shard-sizes "$SHARD_SIZES")
           [[ -n "$SEED" ]]              && ARGS+=(--seed "$SEED")
+          [[ -n "$EXCLUDE_IDS" ]]       && ARGS+=(--exclude-ids "$EXCLUDE_IDS")
           "${ARGS[@]}" >> output.json
-      
+
       - name: test
         run: cat output.json
-
