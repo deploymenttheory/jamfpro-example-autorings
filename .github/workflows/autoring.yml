@@ -64,3 +64,7 @@ jobs:
           [[ -n "$SHARD_SIZES" ]]       && ARGS+=(--shard-sizes "$SHARD_SIZES")
           [[ -n "$SEED" ]]              && ARGS+=(--seed "$SEED")
           "${ARGS[@]}" >> output.json
+      
+      - name: test
+        run: cat output.json
+
