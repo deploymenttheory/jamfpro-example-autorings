@@ -1,0 +1,21 @@
+name: auto-ring
+run-name: Auto Ring
+
+
+on:
+    workflow_dispatch:
+
+jobs:
+    AutoRing:
+        runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/${{ github.repository }}/main:latest
+
+
+        steps:
+          - name: checkout-repo
+            uses: actions/checkout@v6
+
+
+            
+    
