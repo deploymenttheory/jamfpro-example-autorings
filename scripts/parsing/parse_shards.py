@@ -14,7 +14,7 @@ with open(FILE_NAME, "r", encoding="utf-8") as f:
     data = json.load(f)
 
 shards: dict
-shards = data.get("shard", [])
+shards = data.get("shards", [])
 
 if not shards:
     print("no shards available")
