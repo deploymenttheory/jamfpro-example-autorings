@@ -22,7 +22,7 @@ if not shards:
     sys.exit(1)
 
 for k, v in shards.items():
-    # HCL identifiers can't have hyphens
+
     resource_name = f"auto_{k}".replace("-", "_")
     group_name    = f"auto-{k}"
     ids           = ", ".join(str(i) for i in v)
