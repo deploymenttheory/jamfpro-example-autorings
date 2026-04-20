@@ -1,55 +1,14 @@
 # jamfpro-autoring
 
-Distributes Jamf Pro computer inventory across N shards and generates Terraform `jamfpro_static_computer_group` resources via a GitHub Actions workflow.
+Distributes Jamf Pro computer inventory across N shards and generates Terraform `jamfpro_static_computer_group` resources via GitHub Actions.
 
 ---
 
-## How it works
+## Setup
 
-```
-workflow_dispatch
-       ↓
-go-jamf-guid-sharder   ← fetches live computer inventory from Jamf Pro
-       ↓
-shards.json            ← computer IDs mapped to shard groups
-       ↓
-scripts/parse_shards.py
-       ↓
-{environment}/*.tf     ← one .tf file per shard
-       ↓
-Pull Request           ← review & merge to apply
-```
+### GitHub Actions environment
 
----
-
-## Distribution strategies
-
-| Strategy | Description | Relevant inputs |
-|---|---|---|
-| `round-robin` | Evenly distributes computers across N shards | `shard_count`, `seed` |
-| `rendezvous` | Consistent hash-based distribution — stable across inventory changes | `shard_count`, `seed` |
-| `percentage` | Splits inventory by percentages summing to 100 | `shard_percentages` |
-| `size` | Fixed shard sizes; use `-1` for remainder | `shard_sizes` |
-
----
-
-## Workflow inputs (`auto-ring`)
-
-| Input | Description | Default |
-|---|---|---|
-| `environment` | GitHub Actions environment to target | `tfproviderdev` |
-| `strategy` | Distribution algorithm | `round-robin` |
-| `shard_count` | Number of shards (round-robin / rendezvous) | `3` |
-| `shard_percentages` | Percentages summing to 100, e.g. `10,30,60` | — |
-| `shard_sizes` | Absolute sizes, `-1` = remainder, e.g. `50,200,-1` | — |
-| `seed` | Seed string for deterministic shuffling | — |
-| `exclude_ids` | Computer IDs to exclude from all shards, e.g. `1001,1002` | — |
-
----
-
-## Secrets & variables
-
-Configure per GitHub Actions environment:
+Create one environment per target (e.g. `tfproviderdev`) and configure:
 
 | Name | Type | Description |
 |---|---|---|
@@ -57,24 +16,40 @@ Configure per GitHub Actions environment:
 | `JAMFPRO_CLIENT_ID` | Secret | OAuth2 client ID |
 | `JAMFPRO_CLIENT_SECRET` | Secret | OAuth2 client secret |
 
----
+### Docker image
 
-## Docker image
-
-The workflow runs inside a Docker container (`ghcr.io/{repo}/main:latest`) that packages the `go-jamf-guid-sharder` binary, Terraform, and Python dependencies. Rebuild it by triggering the `build-push-docker-image` workflow dispatch — it pulls the latest sharder release from GitHub and pushes a new image tagged with both `latest` and the commit SHA.
+The `auto-ring` workflow runs inside a container that packages the `go-jamf-guid-sharder` binary, Terraform, and Python. Build it once (and after any sharder release) by triggering **`build-push-docker-image`**.
 
 ---
 
-## Test data
+## Workflows
 
-`scripts/mocking/computers/` contains helpers to populate and clean up dummy computers in a Jamf Pro instance:
+| Workflow | Trigger | Description |
+|---|---|---|
+| `auto-ring` | `workflow_dispatch` | Shards inventory and opens a PR with updated `.tf` files |
+| `build-push-docker-image` | `workflow_dispatch` | Builds and pushes the runner Docker image to GHCR |
+| `create-dummy-computers` | `workflow_dispatch` | Creates N dummy computers in Jamf Pro for testing |
+| `delete-dummy-computers` | `workflow_dispatch` | Deletes dummy computers created by the above |
 
-```bash
-# create N dummy computers
-python scripts/mocking/computers/create_dummy_computers.py <count>
+---
 
-# delete them
-python scripts/mocking/computers/delete_dummy_computers.py
-```
+## auto-ring inputs
 
-Requires `JAMFPRO_INSTANCE_FQDN`, `JAMFPRO_CLIENT_ID`, and `JAMFPRO_CLIENT_SECRET` — either via a `.env` file alongside the scripts or as environment variables.
+| Input | Description | Default |
+|---|---|---|
+| `environment` | GitHub Actions environment to target | `tfproviderdev` |
+| `strategy` | Distribution algorithm | `round-robin` |
+| `shard_count` | Number of shards (round-robin / rendezvous) | — |
+| `shard_percentages` | Percentages summing to 100, e.g. `10,30,60` | — |
+| `shard_sizes` | Absolute sizes, `-1` = remainder, e.g. `50,200,-1` | — |
+| `seed` | Seed for deterministic shuffling | — |
+| `exclude_ids` | Comma-separated computer IDs to exclude, e.g. `1001,1002` | — |
+
+### Distribution strategies
+
+| Strategy | Description |
+|---|---|
+| `round-robin` | Even distribution across N shards |
+| `rendezvous` | Consistent hash — stable across inventory changes |
+| `percentage` | Split by percentages summing to 100 |
+| `size` | Fixed shard sizes; use `-1` for remainder |
