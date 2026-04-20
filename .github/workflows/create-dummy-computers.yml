@@ -1,0 +1,55 @@
+name: create-dummy-computers
+run-name: Create Dummy Computers
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "GitHub Actions environment to target"
+        required: false
+        type: string
+        default: tfproviderdev
+      computer_count:
+        description: "Number of dummy computers to create"
+        required: true
+        type: number
+
+
+env:
+  JAMFPRO_INSTANCE_FQDN: ${{ vars.JAMFPRO_INSTANCE_FQDN }}
+  JAMFPRO_CLIENT_ID: ${{ secrets.JAMFPRO_CLIENT_ID }}
+  JAMFPRO_CLIENT_SECRET: ${{ secrets.JAMFPRO_CLIENT_SECRET }}
+
+jobs:
+  CreateDummyComputers:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: checkout-repo
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: install-deps
+        run: pip install -r scripts/mocking/computers/requirements.txt
+
+      - name: create-computers
+        working-directory: scripts/mocking/computers
+        run: python create_dummy_computers.py ${{ inputs.computer_count }}
+
+      - name: commit-ids
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/mocking/computers/computer_ids.json
+          git commit -m "mocking: add ${{ inputs.computer_count }} dummy computers [run ${{ github.run_id }}]"
+          git push

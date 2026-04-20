@@ -1,0 +1,54 @@
+name: delete-dummy-computers
+run-name: Delete Dummy Computers
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "GitHub Actions environment to target"
+        required: false
+        type: string
+        default: tfproviderdev
+
+
+env:
+  JAMFPRO_INSTANCE_FQDN: ${{ vars.JAMFPRO_INSTANCE_FQDN }}
+  JAMFPRO_CLIENT_ID: ${{ secrets.JAMFPRO_CLIENT_ID }}
+  JAMFPRO_CLIENT_SECRET: ${{ secrets.JAMFPRO_CLIENT_SECRET }}
+
+jobs:
+  DeleteDummyComputers:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: checkout-repo
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: install-deps
+        run: pip install -r scripts/mocking/computers/requirements.txt
+
+      - name: delete-computers
+        working-directory: scripts/mocking/computers
+        run: python delete_dummy_computers.py
+
+      - name: reset-ids
+        run: echo "[]" > scripts/mocking/computers/computer_ids.json
+
+      - name: commit-ids
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/mocking/computers/computer_ids.json
+          git commit -m "mocking: clear computer_ids after deletion [run ${{ github.run_id }}]"
+          git push
